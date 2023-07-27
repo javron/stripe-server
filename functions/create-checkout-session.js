@@ -23,7 +23,7 @@ exports.handler = async (event) => {
   return {
     statusCode: 200,
     headers: {
-      'Access-Control-Allow-Origin': 'https://voice-transformation.webflow.io',
+      'Access-Control-Allow-Origin': 'https://voice-transformation.webflow.io/test-purchase-page',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
     body: JSON.stringify({ id: session.id }),
