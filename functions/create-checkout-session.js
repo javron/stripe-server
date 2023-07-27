@@ -1,32 +1,31 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-exports.handler = async function (event, context) {
-  if (event.httpMethod === 'POST') {
-    const { priceId } = JSON.parse(event.body);
-
-    try {
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        success_url: `${process.env.WEBFLOW_PAGE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.WEBFLOW_PAGE_URL}/canceled`,
-      });
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ id: session.id }),
-      };
-    } catch (err) {
-      console.log(err);
-      return { statusCode: 500, body: 'An error occurred with the Stripe API call.' };
-    }
-  } else {
-    return { statusCode: 405, body: 'Method not allowed' };
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
   }
+
+  const { priceId } = JSON.parse(event.body);
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${process.env.WEBFLOW_PAGE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.WEBFLOW_PAGE_URL}/canceled.html`,
+  });
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': 'https://voice-transformation.webflow.io',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+    body: JSON.stringify({ id: session.id }),
+  };
 };
